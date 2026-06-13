@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Visa Appointment Monitor Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-compass-drafting"></i></div>
+                <div class="logo-text">
+                    <h1>AI Monitor</h1>
+                    <span>VISA AUTOMATION</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard
+                </button>
+                <button class="nav-btn" data-tab="profile">
+                    <i class="fa-solid fa-user-gear"></i> Settings & Profile
+                </button>
+                <button class="nav-btn" data-tab="booking">
+                    <i class="fa-solid fa-file-invoice"></i> Booking Assistant
+                </button>
+                <button class="nav-btn" data-tab="mock-portal">
+                    <i class="fa-solid fa-server"></i> Mock Visa Center
+                </button>
+                <button class="nav-btn" data-tab="docs">
+                    <i class="fa-solid fa-folder-open"></i> Document Prep
+                </button>
+            </nav>
+            
+            <div class="sidebar-status-card">
+                <div class="status-header">Agent Status</div>
+                <div class="status-indicator-wrapper">
+                    <span id="agent-pulse" class="pulse-dot idle"></span>
+                    <span id="agent-status-text">IDLE</span>
+                </div>
+                <div class="status-action">
+                    <button id="toggle-monitor-btn" class="btn btn-primary btn-sm btn-block">
+                        <i class="fa-solid fa-play"></i> Start Monitor
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- HEADER -->
+            <header class="app-header">
+                <div class="header-title">
+                    <h2 id="page-title">Monitoring Dashboard</h2>
+                    <p id="page-description">Real-time visa appointment status and tracking overview.</p>
+                </div>
+                <div class="header-actions">
+                    <span class="location-badge"><i class="fa-solid fa-globe"></i> Italy (Algiers)</span>
+                    <button id="refresh-data-btn" class="icon-btn" title="Refresh Dashboard"><i class="fa-solid fa-arrows-rotate"></i></button>
+                </div>
+            </header>
+
+            <!-- TABS CONTAINER -->
+            <div class="tab-content-wrapper">
+                
+                <!-- TAB 1: DASHBOARD -->
+                <section id="tab-dashboard" class="tab-pane active">
+                    <!-- Stat Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon info"><i class="fa-solid fa-shield-halved"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Monitor Engine</span>
+                                <span class="stat-value" id="stat-engine-status">Inactive</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success"><i class="fa-solid fa-calendar-check"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Active Slots</span>
+                                <span class="stat-value" id="stat-slots-count">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Last Checked</span>
+                                <span class="stat-value" id="stat-last-checked">Never</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon primary"><i class="fa-solid fa-hourglass-half"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Next Check In</span>
+                                <span class="stat-value" id="stat-countdown">-- s</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="stat-countdown-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Split Details Panel -->
+                    <div class="content-split">
+                        <!-- Slots list & Timeline -->
+                        <div class="panel glass slots-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-list-check"></i> Available Appointment Slots</h3>
+                                <span class="badge" id="slots-count-badge">0 Found</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="slots-container" id="slots-list-container">
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-calendar-xmark"></i>
+                                        <p>No active slots detected. Make sure the Monitor Engine is running and check the Mock Visa Center to add slots.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="timeline-wrapper">
+                                    <h4><i class="fa-solid fa-clock-rotate-left"></i> History Log</h4>
+                                    <ul class="timeline-list" id="slots-timeline">
+                                        <li class="timeline-empty">No activity events recorded yet.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Agent Log Terminal -->
+                        <div class="panel glass logs-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-terminal"></i> Live Agent Output</h3>
+                                <button id="clear-logs-btn" class="btn btn-secondary btn-xs"><i class="fa-solid fa-trash-can"></i> Clear log view</button>
+                            </div>
+                            <div class="panel-body flex-column">
+                                <div class="terminal-container">
+                                    <div class="terminal-header">
+                                        <span class="term-dot close"></span>
+                                        <span class="term-dot min"></span>
+                                        <span class="term-dot max"></span>
+                                        <span class="term-title">agent_activity.log</span>
+                                    </div>
+                                    <pre class="terminal-body" id="logs-terminal">Initializing console interface...</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: PROFILE & SETTINGS -->
+                <section id="tab-profile" class="tab-pane">
+                    <div class="panel glass max-width-800">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-sliders"></i> Configuration Settings</h3>
+                        </div>
+                        <div class="panel-body">
+                            <form id="settings-form">
+                                <div class="form-section">
+                                    <h4><i class="fa-solid fa-address-card"></i> User Profile (Securely Encrypted)</h4>
+                                    <p class="section-desc">Passport number is encrypted locally and is only masked in database logs.</p>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-6">
+                                            <label for="prof-fullname">Full Name (As in Passport)</label>
+                                            <input type="text" id="prof-fullname" placeholder="e.g. John Doe" required>
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="prof-passport">Passport Number</label>
+                                            <div class="password-input-wrapper">
+                                                <input type="password" id="prof-passport" placeholder="e.g. AB1234567" required>
+                                                <button type="button" id="toggle-passport-btn" class="toggle-password-btn" title="Show/Hide Passport">
+                                                    <i class="fa-solid fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <span class="input-tip" id="passport-masked-lbl">Currently encrypted: None</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-4">
+                                            <label for="prof-visa-type">Visa Category</label>
+                                            <select id="prof-visa-type">
+                                                <option value="tourism">Tourism</option>
+                                                <option value="study">Study</option>
+                                                <option value="business">Business</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label for="prof-country">Destination Country</label>
+                                            <input type="text" id="prof-country" value="Italy" required>
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label for="prof-city">Preferred Center City</label>
+                                            <input type="text" id="prof-city" value="Algiers" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h4><i class="fa-solid fa-bell"></i> Notification Channels</h4>
+                                    <p class="section-desc">Configure instant notifications when slots match your criteria.</p>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-6">
+                                            <label for="notif-tg-token">Telegram Bot Token</label>
+                                            <input type="text" id="notif-tg-token" placeholder="YOUR_TELEGRAM_BOT_TOKEN">
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="notif-tg-chatid">Telegram Chat ID</label>
+                                            <input type="text" id="notif-tg-chatid" placeholder="YOUR_TELEGRAM_CHAT_ID">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group col-4">
+                                            <label for="notif-email-sender">Sender Email (SMTP)</label>
+                                            <input type="email" id="notif-email-sender" placeholder="sender@example.com">
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label for="notif-email-pass">Sender Password (App Specific)</label>
+                                            <input type="password" id="notif-email-pass" placeholder="••••••••••••••••">
+                                        </div>
+                                        <div class="form-group col-4">
+                                            <label for="notif-email-receiver">Recipient Email</label>
+                                            <input type="email" id="notif-email-receiver" placeholder="recipient@example.com">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group col-6">
+                                            <label for="notif-smtp-server">SMTP Server</label>
+                                            <input type="text" id="notif-smtp-server" value="smtp.gmail.com">
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="notif-smtp-port">SMTP Port</label>
+                                            <input type="number" id="notif-smtp-port" value="587">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="notif-webhook">Webhook Callback URL (Optional)</label>
+                                        <input type="url" id="notif-webhook" placeholder="https://api.yourdomain.com/webhook">
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h4><i class="fa-solid fa-stopwatch"></i> Scheduler Tuning</h4>
+                                    <div class="form-row">
+                                        <div class="form-group col-6">
+                                            <label for="sched-interval">Normal Check Interval (seconds)</label>
+                                            <input type="number" id="sched-interval" min="10" max="600" value="60" required>
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="sched-jitter">Jitter Range (max delay seconds)</label>
+                                            <input type="number" id="sched-jitter" min="0" max="60" value="5" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="button" id="test-notifications-btn" class="btn btn-secondary">
+                                        <i class="fa-solid fa-paper-plane"></i> Send Test Notification
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fa-solid fa-floppy-disk"></i> Save Configurations
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: BOOKING ASSISTANT -->
+                <section id="tab-booking" class="tab-pane">
+                    <div class="booking-split-layout">
+                        <!-- Auto-fill Info Sidebar Helper -->
+                        <div class="panel glass booking-helper-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-passport"></i> Autofill Clipboard Helper</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p class="helper-intro">Since automated form submission may violate the portal's Terms of Service, use this quick-copy sidebar helper to manually complete your booking details.</p>
+                                
+                                <div class="copy-fields-stack">
+                                    <div class="copy-field">
+                                        <span class="copy-label">Full Name</span>
+                                        <div class="copy-value-wrapper">
+                                            <span class="copy-value" id="copy-fullname">John Doe</span>
+                                            <button class="btn-copy" data-target="copy-fullname"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="copy-field">
+                                        <span class="copy-label">Passport Number</span>
+                                        <div class="copy-value-wrapper">
+                                            <span class="copy-value" id="copy-passport">A12345678</span>
+                                            <button class="btn-copy" data-target="copy-passport"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="copy-field">
+                                        <span class="copy-label">Visa Category</span>
+                                        <div class="copy-value-wrapper">
+                                            <span class="copy-value" id="copy-visatype">Tourism</span>
+                                            <button class="btn-copy" data-target="copy-visatype"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="copy-field">
+                                        <span class="copy-label">Location (VFS Center)</span>
+                                        <div class="copy-value-wrapper">
+                                            <span class="copy-value" id="copy-city">Algiers</span>
+                                            <button class="btn-copy" data-target="copy-city"><i class="fa-regular fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info" style="margin-top: 20px;">
+                                    <i class="fa-solid fa-lightbulb"></i>
+                                    <span>Once a date is selected in the portal, click copy buttons to speed up pasting form inputs.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booking portal iframe -->
+                        <div class="panel glass booking-portal-panel">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-laptop-code"></i> Visa Center Booking Portal</h3>
+                                <button id="reload-booking-frame" class="btn btn-secondary btn-xs"><i class="fa-solid fa-rotate-right"></i> Reload Portal</button>
+                            </div>
+                            <div class="panel-body no-padding flex-grow">
+                                <div class="iframe-container">
+                                    <iframe id="booking-portal-iframe" src="/mock/vfs/italy/book" width="100%" height="100%" frameborder="0"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: MOCK VISA CENTER -->
+                <section id="tab-mock-portal" class="tab-pane">
+                    <div class="content-split">
+                        <!-- Mock control configuration panel -->
+                        <div class="panel glass">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Simulating Slot Scenarios</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>Generate slot events here to verify that the monitoring agent operates accurately, logs internally, and dispatches alerts.</p>
+                                
+                                <div class="simulation-actions">
+                                    <div class="action-card">
+                                        <h5>Scenario 1: New Slot Openings</h5>
+                                        <p>Simulates a visa center adding new appointment dates. The agent should detect them and alert you immediately.</p>
+                                        <div class="simulator-inline-form">
+                                            <input type="date" id="sim-add-date" value="2026-07-25">
+                                            <select id="sim-add-city">
+                                                <option value="Algiers">Algiers</option>
+                                                <option value="Oran">Oran</option>
+                                            </select>
+                                            <button id="sim-add-btn" class="btn btn-success btn-sm"><i class="fa-solid fa-plus"></i> Add Slot</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-card">
+                                        <h5>Scenario 2: Cancellation / Booked Slot</h5>
+                                        <p>Removes a date from availability, representing someone else booking it or center withdrawal.</p>
+                                        <div class="simulator-inline-form">
+                                            <select id="sim-delete-select" class="flex-grow">
+                                                <option value="">-- No dates available --</option>
+                                            </select>
+                                            <button id="sim-delete-btn" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> Delete Slot</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="action-card">
+                                        <h5>Quick Simulation Presets</h5>
+                                        <div class="btn-group">
+                                            <button id="preset-new-slot-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-bell"></i> New Slot in Algiers</button>
+                                            <button id="preset-clear-slots-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-circle-xmark"></i> Clear All Slots</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live view of the mock availability table -->
+                        <div class="panel glass">
+                            <div class="panel-header">
+                                <h3><i class="fa-solid fa-earth-africa"></i> Live Mock Webpage Representation</h3>
+                                <a href="/mock/vfs/italy/availability" target="_blank" class="btn btn-secondary btn-xs"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open Public URL</a>
+                            </div>
+                            <div class="panel-body no-padding">
+                                <div class="iframe-container-half">
+                                    <iframe id="mock-availability-iframe" src="/mock/vfs/italy/availability" width="100%" height="100%" frameborder="0"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: DOCUMENT PREP -->
+                <section id="tab-docs" class="tab-pane">
+                    <div class="panel glass max-width-900">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-file-pdf"></i> Required Documents & Timeline Checklist</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="docs-checklist-layout">
+                                <div class="checklist-section">
+                                    <h4>Required Document List (Category: <span id="doc-visa-category-title" style="color: #6366f1;">Tourism</span>)</h4>
+                                    <ul class="doc-list" id="visa-doc-list">
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Visa Application Form:</strong> Fully completed and signed.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Passport:</strong> Original passport valid for at least 3 months after departure, with at least 2 empty pages.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Passport Copy:</strong> Copy of the biometric details page and all stamped pages.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Photos:</strong> Two recent passport-size biometric color photos on a white background.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Travel Insurance:</strong> Valid for all Schengen countries covering medical/repatriation (min €30,000).</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Proof of Accommodation:</strong> Confirmed hotel reservation or hospitality host declaration.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Proof of Financial Sufficiency:</strong> Bank statements for the last 3 months, proof of salary/income.</li>
+                                        <li><i class="fa-regular fa-square-check"></i> <strong>Flight Booking:</strong> Confirmed round-trip flight reservation.</li>
+                                    </ul>
+                                </div>
+
+                                <div class="timeline-steps-section">
+                                    <h4>Booking Steps Timeline</h4>
+                                    <div class="booking-timeline">
+                                        <div class="step-item completed">
+                                            <div class="step-num">1</div>
+                                            <div class="step-content">
+                                                <h5>Prepare Documents</h5>
+                                                <p>Collect all items on the checklist before booking.</p>
+                                            </div>
+                                        </div>
+                                        <div class="step-item active">
+                                            <div class="step-num">2</div>
+                                            <div class="step-content">
+                                                <h5>Slot Monitoring</h5>
+                                                <p>Run the AI Monitor to catch openings instantly.</p>
+                                            </div>
+                                        </div>
+                                        <div class="step-item">
+                                            <div class="step-num">3</div>
+                                            <div class="step-content">
+                                                <h5>Manual Booking</h5>
+                                                <p>Immediately complete the booking once alerted.</p>
+                                            </div>
+                                        </div>
+                                        <div class="step-item">
+                                            <div class="step-num">4</div>
+                                            <div class="step-content">
+                                                <h5>Visa Appointment</h5>
+                                                <p>Submit documents and capture biometrics at the center.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="app-toast">
+        <i class="fa-solid fa-circle-info toast-icon" id="toast-icon"></i>
+        <span class="toast-message" id="toast-message">Message text here</span>
+    </div>
+
+    <!-- Custom app script -->
+    <script src="app.js"></script>
+</body>
+</html>
